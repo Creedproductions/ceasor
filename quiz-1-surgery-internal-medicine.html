@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clinical MCQ Quiz — Surgery & Internal Medicine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f1ea;
+    --bg-card: #ffffff;
+    --ink: #1a1a1a;
+    --ink-soft: #5a5a5a;
+    --line: #e6dfd2;
+    --accent: #7a5c3a;
+    --selected: #faf0dc;
+    --correct: #5a7d3e;
+    --correct-bg: #eef3e4;
+    --wrong: #b5483c;
+    --wrong-bg: #f7e6e3;
+    --shadow: 0 2px 12px rgba(0,0,0,0.04);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 640px; margin: 0 auto; }
+
+  /* Start screen */
+  .start-screen {
+    text-align: center;
+    padding: 48px 20px;
+  }
+  .start-screen h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 36px;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin-bottom: 12px;
+  }
+  .start-screen .subtitle {
+    color: var(--ink-soft);
+    font-size: 16px;
+    margin-bottom: 32px;
+  }
+  .info-card {
+    background: var(--bg-card);
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+    margin-bottom: 24px;
+    text-align: left;
+  }
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-row .label { color: var(--ink-soft); }
+  .info-row .value { font-weight: 600; }
+  .topics-list {
+    color: var(--ink-soft);
+    font-size: 14px;
+    margin-top: 12px;
+    line-height: 1.6;
+  }
+  .topics-list strong { color: var(--ink); font-weight: 600; }
+
+  /* Quiz screen */
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .progress-bar {
+    height: 4px;
+    background: var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.3s ease;
+  }
+  .topic-tag {
+    display: inline-block;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .question-card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 24px 22px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .question-text {
+    font-family: 'Fraunces', serif;
+    font-size: 19px;
+    font-weight: 500;
+    line-height: 1.45;
+    margin-bottom: 22px;
+    color: var(--ink);
+  }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option {
+    background: var(--bg);
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--ink);
+    text-align: left;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    line-height: 1.4;
+  }
+  .option:hover { border-color: var(--accent); background: #faf6ee; }
+  .option.selected {
+    background: var(--selected);
+    border-color: var(--accent);
+  }
+  .option-letter {
+    background: var(--bg-card);
+    border: 1.5px solid var(--line);
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 12px;
+    flex-shrink: 0;
+    color: var(--ink-soft);
+  }
+  .option.selected .option-letter {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+  .actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .btn {
+    background: var(--ink);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 14px 22px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    flex: 1;
+    transition: all 0.15s ease;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn:hover { background: #333; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-secondary {
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1.5px solid var(--line);
+  }
+  .btn-secondary:hover { background: var(--bg-card); color: var(--ink); }
+  .btn-submit {
+    background: var(--correct);
+  }
+  .btn-submit:hover { background: #4a6b32; }
+
+  /* Results screen */
+  .results-header {
+    text-align: center;
+    padding: 24px 16px 16px;
+  }
+  .results-header h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .score-circle {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 4px solid var(--accent);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 16px auto;
+    box-shadow: var(--shadow);
+  }
+  .score-num {
+    font-family: 'Fraunces', serif;
+    font-size: 44px;
+    font-weight: 600;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .score-total {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+  .score-msg {
+    color: var(--ink-soft);
+    font-size: 15px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .review-section {
+    margin-top: 24px;
+  }
+  .review-heading {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    padding-left: 4px;
+  }
+  .review-item {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 20px 18px;
+    box-shadow: var(--shadow);
+    margin-bottom: 12px;
+  }
+  .review-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 8px;
+  }
+  .review-num {
+    font-size: 12px;
+    color: var(--ink-soft);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .review-status {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 12px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .review-status.correct {
+    background: var(--correct-bg);
+    color: var(--correct);
+  }
+  .review-status.wrong {
+    background: var(--wrong-bg);
+    color: var(--wrong);
+  }
+  .review-status.skipped {
+    background: var(--line);
+    color: var(--ink-soft);
+  }
+  .review-q {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.45;
+    margin-bottom: 14px;
+  }
+  .review-answer-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .review-answer-row .label {
+    font-weight: 600;
+    flex-shrink: 0;
+    min-width: 75px;
+    color: var(--ink-soft);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding-top: 2px;
+  }
+  .review-answer-row .answer {
+    flex: 1;
+  }
+  .review-answer-row .answer.your-correct { color: var(--correct); font-weight: 600; }
+  .review-answer-row .answer.your-wrong { color: var(--wrong); font-weight: 600; }
+  .review-answer-row .answer.correct-ans { color: var(--correct); font-weight: 600; }
+  .review-explanation {
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: #faf6ee;
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .review-topic {
+    display: inline-block;
+    background: var(--bg);
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-size: 10px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+  }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Start screen -->
+    <div id="start-screen">
+      <div class="start-screen">
+        <h1>Clinical MCQs</h1>
+        <p class="subtitle">Surgery &amp; Internal Medicine</p>
+        <div class="info-card">
+          <div class="info-row"><span class="label">Questions</span><span class="value">20</span></div>
+          <div class="info-row"><span class="label">Time</span><span class="value">No limit</span></div>
+          <div class="info-row"><span class="label">Format</span><span class="value">Single best answer</span></div>
+          <div class="topics-list">
+            <strong>Topics covered:</strong><br>
+            • Traumatic Brain Injury (Surgery) — 10 Qs<br>
+            • Pneumonia (Internal Medicine) — 10 Qs
+          </div>
+        </div>
+        <button class="btn" onclick="startQuiz()">Begin Quiz</button>
+      </div>
+    </div>
+
+    <!-- Quiz screen -->
+    <div id="quiz-screen" class="hidden">
+      <div class="top-bar">
+        <span id="progress-text">Question 1 of 20</span>
+        <span class="topic-tag" id="current-topic"></span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+
+      <div class="question-card">
+        <div class="question-text" id="question-text"></div>
+        <div class="options" id="options"></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-secondary" id="prev-btn" onclick="prevQuestion()">← Back</button>
+        <button class="btn" id="next-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+
+    <!-- Results screen -->
+    <div id="results-screen" class="hidden">
+      <div class="results-header">
+        <h2>Your Results</h2>
+        <p class="subtitle" style="color: var(--ink-soft); font-size: 15px;">Surgery &amp; Internal Medicine</p>
+        <div class="score-circle">
+          <div class="score-num" id="score-num">0</div>
+          <div class="score-total" id="score-total">of 20</div>
+        </div>
+        <p class="score-msg" id="score-message"></p>
+      </div>
+
+      <div class="review-section">
+        <h3 class="review-heading">Answer Review</h3>
+        <div id="review-list"></div>
+      </div>
+
+      <div class="actions" style="margin-top: 24px; margin-bottom: 24px;">
+        <button class="btn btn-secondary" onclick="restartQuiz()">Retake Quiz</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+const QUESTIONS = [
+  // TRAUMATIC BRAIN INJURY (Surgery)
+  {
+    topic: "TBI",
+    q: "A 25-year-old man is brought in after a boda-boda accident. He opens eyes to pain, makes incomprehensible sounds, and withdraws from painful stimuli. His GCS is:",
+    options: ["7", "8", "9", "10"],
+    answer: 1,
+    explanation: "Eyes open to pain = 2, incomprehensible sounds = 2, withdraws from pain = 4. Total = 8."
+  },
+  {
+    topic: "TBI",
+    q: "A patient has a lucid interval after head trauma, then rapidly deteriorates. CT shows a biconvex (lens-shaped) hyperdense collection. Most likely diagnosis:",
+    options: ["Subdural hematoma", "Epidural hematoma", "Subarachnoid hemorrhage", "Intracerebral hemorrhage"],
+    answer: 1,
+    explanation: "Classic epidural hematoma — usually from middle meningeal artery tear. Biconvex shape because it's limited by suture lines."
+  },
+  {
+    topic: "TBI",
+    q: "Cushing's triad in raised intracranial pressure consists of:",
+    options: ["Hypertension, bradycardia, irregular respirations", "Hypotension, tachycardia, tachypnea", "Hypertension, tachycardia, Cheyne-Stokes", "Hypotension, bradycardia, apnea"],
+    answer: 0,
+    explanation: "The brain's attempt to maintain cerebral perfusion against rising ICP. A late and ominous sign of impending herniation."
+  },
+  {
+    topic: "TBI",
+    q: "First-line measure to reduce intracranial pressure in severe TBI is:",
+    options: ["Mannitol bolus", "Aggressive hyperventilation to PaCO₂ 25 mmHg", "Head elevation 30° and neutral neck position", "Immediate decompressive craniectomy"],
+    answer: 2,
+    explanation: "Simple positioning improves venous drainage from the head. Aggressive hyperventilation causes vasoconstriction → ischemia. Mannitol and surgery come later."
+  },
+  {
+    topic: "TBI",
+    q: "Raccoon eyes, Battle's sign, hemotympanum, and CSF rhinorrhea suggest:",
+    options: ["Frontal bone fracture", "Basilar skull fracture", "Le Fort fracture", "Mandibular fracture"],
+    answer: 1,
+    explanation: "Classic tetrad of basilar skull fracture. Blood and CSF track along skull base planes producing these signs."
+  },
+  {
+    topic: "TBI",
+    q: "CT shows a crescent-shaped hyperdense collection that crosses suture lines. Source of bleeding:",
+    options: ["Middle meningeal artery", "Bridging veins", "Circle of Willis aneurysm", "Cortical artery"],
+    answer: 1,
+    explanation: "Subdural hematoma — bridging veins tear easily in the elderly and alcoholics whose atrophied brains stretch the veins. Crescent shape; crosses sutures (unlike epidural)."
+  },
+  {
+    topic: "TBI",
+    q: "A young man in a high-speed RTA is comatose (GCS 6), but CT shows only small punctate hemorrhages at the grey-white matter junction. Most likely diagnosis:",
+    options: ["Diffuse axonal injury", "Subarachnoid hemorrhage", "Cerebral contusion", "Concussion"],
+    answer: 0,
+    explanation: "DAI — rotational/shearing forces tear axons. Clinical state much worse than CT findings suggest. MRI is more sensitive than CT."
+  },
+  {
+    topic: "TBI",
+    q: "Uncal (transtentorial) herniation classically produces:",
+    options: ["Ipsilateral pupillary dilation + contralateral hemiparesis", "Contralateral pupillary dilation + ipsilateral hemiparesis", "Bilateral pinpoint pupils", "Isolated decerebrate posturing"],
+    answer: 0,
+    explanation: "CN III is compressed on the side of herniation → blown pupil same side. Corticospinal tract decussates, so weakness is on the opposite side."
+  },
+  {
+    topic: "TBI",
+    q: "Per the Canadian CT Head Rule, which is a 'high-risk' feature mandating CT in minor head injury?",
+    options: ["Age > 65 years", "GCS < 15 at 2 hours post-injury", "Suspected open or depressed skull fracture", "All of the above"],
+    answer: 3,
+    explanation: "All listed are high-risk features. Other high-risk features include any sign of basilar skull fracture and ≥2 vomits."
+  },
+  {
+    topic: "TBI",
+    q: "A 70-year-old on warfarin falls, hits his head, and is asymptomatic with GCS 15. Best next step:",
+    options: ["Discharge with head injury advice", "CT head and admit for observation", "Reverse warfarin empirically", "Lumbar puncture"],
+    answer: 1,
+    explanation: "Anticoagulation dramatically raises the risk of delayed intracranial bleeding even after trivial trauma. Image first, then decide on management."
+  },
+
+  // PNEUMONIA (Internal Medicine)
+  {
+    topic: "Pneumonia",
+    q: "The most common bacterial cause of community-acquired pneumonia worldwide is:",
+    options: ["Haemophilus influenzae", "Streptococcus pneumoniae", "Mycoplasma pneumoniae", "Klebsiella pneumoniae"],
+    answer: 1,
+    explanation: "Strep pneumoniae remains the dominant cause of typical CAP across all age groups."
+  },
+  {
+    topic: "Pneumonia",
+    q: "A 65-year-old man: confused, BP 88/55, RR 32, urea 9 mmol/L. His CURB-65 score and disposition:",
+    options: ["Score 3, outpatient management", "Score 4, ward admission", "Score 5, consider ICU", "Score 2, outpatient antibiotics"],
+    answer: 2,
+    explanation: "Confusion (1) + Urea >7 (1) + RR ≥30 (1) + low BP (1) + Age ≥65 (1) = 5. Score ≥3 means severe pneumonia; 4-5 prompts ICU consideration."
+  },
+  {
+    topic: "Pneumonia",
+    q: "A university student presents with a 2-week dry cough, low-grade fever, headache. CXR shows patchy bilateral infiltrates that look worse than the patient. Most likely organism:",
+    options: ["Streptococcus pneumoniae", "Mycoplasma pneumoniae", "Staphylococcus aureus", "Pseudomonas aeruginosa"],
+    answer: 1,
+    explanation: "'Walking pneumonia' — young patients, dry cough, X-ray-worse-than-patient pattern. Cold agglutinins may be positive. Macrolides or doxycycline are first-line."
+  },
+  {
+    topic: "Pneumonia",
+    q: "A 60-year-old smoker returns from a hotel stay with high fever, dry cough, diarrhea, hyponatremia, and confusion. Most likely organism:",
+    options: ["Legionella pneumophila", "Streptococcus pneumoniae", "Chlamydia pneumoniae", "Influenza virus"],
+    answer: 0,
+    explanation: "Legionella triad: fever + GI symptoms + neuro symptoms. Hyponatremia from SIADH. Water/aerosol exposure. Diagnose with urinary antigen test."
+  },
+  {
+    topic: "Pneumonia",
+    q: "First-line empiric antibiotic for an outpatient, previously healthy adult with CAP:",
+    options: ["Ceftriaxone IV", "Amoxicillin or doxycycline", "Levofloxacin", "Vancomycin + piperacillin-tazobactam"],
+    answer: 1,
+    explanation: "For uncomplicated outpatient CAP, oral amoxicillin (covering pneumococcus) or doxycycline (also covers atypicals) is standard."
+  },
+  {
+    topic: "Pneumonia",
+    q: "Hospital-acquired pneumonia (HAP) is defined as pneumonia occurring:",
+    options: ["Within 24 hours of admission", "≥48 hours after hospital admission", "≥7 days after discharge", "Only in ventilated patients"],
+    answer: 1,
+    explanation: "HAP = pneumonia developing ≥48 hours after admission, not incubating at the time of admission. VAP is a subset, occurring ≥48 hours after intubation."
+  },
+  {
+    topic: "Pneumonia",
+    q: "An alcoholic with poor dentition presents with foul-smelling sputum and a right lower lobe cavitary lesion. Most likely diagnosis:",
+    options: ["Lung cancer", "Tuberculosis", "Aspiration pneumonia with lung abscess", "Pulmonary embolism"],
+    answer: 2,
+    explanation: "Anaerobes from poor oral hygiene aspirate into dependent segments (right lower lobe, posterior segment of upper lobe). Treat with clindamycin or amoxicillin-clavulanate."
+  },
+  {
+    topic: "Pneumonia",
+    q: "'Rust-colored sputum' classically points to:",
+    options: ["Klebsiella pneumoniae", "Streptococcus pneumoniae", "Pseudomonas aeruginosa", "Mycobacterium tuberculosis"],
+    answer: 1,
+    explanation: "Pneumococcal pneumonia. Klebsiella classically produces 'currant jelly' sputum — a useful contrast."
+  },
+  {
+    topic: "Pneumonia",
+    q: "A pneumonia patient stays febrile on appropriate antibiotics. CXR now shows a new pleural effusion. Next best step:",
+    options: ["Add another antibiotic", "Diagnostic thoracentesis", "CT chest", "Continue current antibiotics 48 more hours"],
+    answer: 1,
+    explanation: "Need to distinguish simple parapneumonic effusion from complicated effusion or empyema. pH <7.2, glucose <40, or frank pus = empyema → requires chest drain."
+  },
+  {
+    topic: "Pneumonia",
+    q: "Which vaccine is recommended for all adults ≥65 years to prevent pneumonia?",
+    options: ["Pneumococcal vaccine (PCV ± PPSV23)", "BCG vaccine", "Hib vaccine", "Meningococcal vaccine"],
+    answer: 0,
+    explanation: "Pneumococcal vaccination is universally recommended for adults ≥65 years. Specific regimens (PCV13, PCV15, PCV20, PPSV23) vary by current guideline."
+  }
+];
+
+let currentIndex = 0;
+let userAnswers = new Array(QUESTIONS.length).fill(null);
+
+function startQuiz() {
+  document.getElementById('start-screen').classList.add('hidden');
+  document.getElementById('quiz-screen').classList.remove('hidden');
+  currentIndex = 0;
+  userAnswers = new Array(QUESTIONS.length).fill(null);
+  renderQuestion();
+  window.scrollTo(0, 0);
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[currentIndex];
+  document.getElementById('question-text').textContent = q.q;
+  document.getElementById('current-topic').textContent = q.topic;
+  document.getElementById('progress-text').textContent = `Question ${currentIndex + 1} of ${QUESTIONS.length}`;
+  document.getElementById('progress-fill').style.width = `${((currentIndex + 1) / QUESTIONS.length) * 100}%`;
+
+  const optionsDiv = document.getElementById('options');
+  optionsDiv.innerHTML = '';
+  const letters = ['A', 'B', 'C', 'D', 'E'];
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option' + (userAnswers[currentIndex] === i ? ' selected' : '');
+    btn.innerHTML = `<span class="option-letter">${letters[i]}</span><span>${opt}</span>`;
+    btn.onclick = () => selectOption(i);
+    optionsDiv.appendChild(btn);
+  });
+
+  document.getElementById('prev-btn').disabled = currentIndex === 0;
+
+  const nextBtn = document.getElementById('next-btn');
+  if (currentIndex === QUESTIONS.length - 1) {
+    nextBtn.textContent = 'Submit Quiz';
+    nextBtn.classList.add('btn-submit');
+  } else {
+    nextBtn.textContent = 'Next →';
+    nextBtn.classList.remove('btn-submit');
+  }
+}
+
+function selectOption(i) {
+  userAnswers[currentIndex] = i;
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentIndex === QUESTIONS.length - 1) {
+    if (userAnswers.includes(null)) {
+      const unanswered = userAnswers.filter(a => a === null).length;
+      if (!confirm(`You have ${unanswered} unanswered question(s). Submit anyway?`)) return;
+    }
+    showResults();
+  } else {
+    currentIndex++;
+    renderQuestion();
+    window.scrollTo(0, 0);
+  }
+}
+
+function prevQuestion() {
+  if (currentIndex > 0) {
+    currentIndex--;
+    renderQuestion();
+    window.scrollTo(0, 0);
+  }
+}
+
+function showResults() {
+  document.getElementById('quiz-screen').classList.add('hidden');
+  document.getElementById('results-screen').classList.remove('hidden');
+
+  let score = 0;
+  QUESTIONS.forEach((q, i) => { if (userAnswers[i] === q.answer) score++; });
+
+  document.getElementById('score-num').textContent = score;
+  document.getElementById('score-total').textContent = `of ${QUESTIONS.length}`;
+
+  const pct = (score / QUESTIONS.length) * 100;
+  let msg = '';
+  if (pct === 100) msg = "Perfect score. Outstanding work.";
+  else if (pct >= 80) msg = `${pct.toFixed(0)}% — strong performance.`;
+  else if (pct >= 60) msg = `${pct.toFixed(0)}% — solid effort. Review the misses below.`;
+  else if (pct >= 40) msg = `${pct.toFixed(0)}% — some gaps to close. Review and retry.`;
+  else msg = `${pct.toFixed(0)}% — worth a careful re-read of these topics.`;
+  document.getElementById('score-message').textContent = msg;
+
+  const reviewList = document.getElementById('review-list');
+  reviewList.innerHTML = '';
+  const letters = ['A', 'B', 'C', 'D', 'E'];
+  QUESTIONS.forEach((q, i) => {
+    const userAns = userAnswers[i];
+    const isCorrect = userAns === q.answer;
+    const skipped = userAns === null;
+
+    let statusClass = isCorrect ? 'correct' : (skipped ? 'skipped' : 'wrong');
+    let statusText = isCorrect ? 'Correct' : (skipped ? 'Skipped' : 'Incorrect');
+
+    const item = document.createElement('div');
+    item.className = 'review-item';
+    item.innerHTML = `
+      <div class="review-item-header">
+        <span class="review-num">Question ${i + 1} <span class="review-topic">${q.topic}</span></span>
+        <span class="review-status ${statusClass}">${statusText}</span>
+      </div>
+      <div class="review-q">${q.q}</div>
+      ${skipped ? '' : `
+        <div class="review-answer-row">
+          <span class="label">Your answer</span>
+          <span class="answer ${isCorrect ? 'your-correct' : 'your-wrong'}">${letters[userAns]}. ${q.options[userAns]}</span>
+        </div>
+      `}
+      <div class="review-answer-row">
+        <span class="label">Correct</span>
+        <span class="answer correct-ans">${letters[q.answer]}. ${q.options[q.answer]}</span>
+      </div>
+      <div class="review-explanation">${q.explanation}</div>
+    `;
+    reviewList.appendChild(item);
+  });
+
+  window.scrollTo(0, 0);
+}
+
+function restartQuiz() {
+  document.getElementById('results-screen').classList.add('hidden');
+  document.getElementById('start-screen').classList.remove('hidden');
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>
